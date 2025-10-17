@@ -20,7 +20,8 @@ A full-stack educational demo that simulates a smart campus with fake IoT sensor
 ├─ agents/
 │  └─ langgraph_graph.py
 ├─ app/
-│  └─ streamlit_app.py
+│  ├─ streamlit_app.py
+│  └─ startup.py             # Auto-generate CSV and train model if missing
 ├─ models/
 │  └─ model.joblib (generated)
 ├─ tests/
@@ -30,7 +31,7 @@ A full-stack educational demo that simulates a smart campus with fake IoT sensor
 │  └─ config.toml           # Theme (dark, indigo accent)
 ├─ .gitignore               # Ignores OS/editor, env, Node/Python artifacts
 ├─ requirements.txt
-├─ Dockerfile
+├─ Dockerfile               # Launches startup.py
 ├─ render.yaml
 └─ README.md
 ```
@@ -108,38 +109,22 @@ streamlit run app/streamlit_app.py
 ## Deployment
 
 ### Render (recommended)
-1) Push this repo to GitHub.
-2) Create a free account at Render and click New → Web Service.
-3) Connect your GitHub repo and select it.
-4) In Runtime, choose “Docker”. Render will use the included `Dockerfile`.
-5) Set the port to 8080 (Render reads from the Dockerfile; `EXPOSE 8080`).
-6) Add Environment Variables as needed (e.g., `GEMINI_API_KEY`).
-7) Click “Create Web Service” and wait for the build & deploy to finish.
+- Uses the Dockerfile, which starts `app/startup.py`. On first boot, it creates `data/iot_readings.csv` and trains `models/model.joblib` if they’re missing, then serves Streamlit on port 8080.
 
-Alternatively, one-click via `render.yaml`:
-- On Render Dashboard → New → Blueprint → select this repo (it detects `render.yaml`).
-- Fill in any required env vars and deploy.
+Steps:
+1) Push this repo to GitHub.
+2) Render → New → Web Service → connect repo → Runtime: Docker → Create Web Service.
+3) Add env vars if needed (e.g., `GEMINI_API_KEY`).
+4) Open the live URL.
+
+Redeploy: push to `main` (auto-deploy if enabled) or click Manual Deploy.
+
+Persistent data options:
+- Free plan rebuilds the container on deploys; generated CSV/model are recreated on boot.
+- For persistence across deploys, store data in an external object store (e.g., S3) or a database, and load on startup.
 
 ### Vercel (via Docker)
-Vercel doesn’t natively run Streamlit as a Serverless Function, but you can deploy using the Dockerfile:
-1) Install Vercel CLI and log in:
-```bash
-npm i -g vercel
-vercel login
-```
-2) Create a `vercel.json` in the project root with Docker deployment:
-```json
-{
-  "builds": [
-    { "src": "Dockerfile", "use": "@vercel/docker" }
-  ]
-}
-```
-3) Deploy:
-```bash
-vercel --prod
-```
-If Vercel asks for the port, set it to 8080. You can add env vars in the Vercel dashboard (e.g., `GEMINI_API_KEY`).
+- Add `vercel.json` with a Docker build, then `vercel --prod`. See earlier section for details.
 
 ## Using the App
 - Home: See total things, buildings, average temperature and power. Explore energy and shaking charts.

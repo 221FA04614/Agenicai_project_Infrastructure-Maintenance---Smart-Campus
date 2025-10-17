@@ -29,4 +29,4 @@ ENV PORT=8080 \
 EXPOSE 8080
 
 # Default command
-CMD ["streamlit", "run", "app/streamlit_app.py", "--server.port=8080", "--server.address=0.0.0.0"]
+CMD ["python", "app/startup.py"]
