@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: smart-campus-streamlit
+    env: docker
+    plan: free
+    autoDeploy: true
+    region: oregon
+    healthCheckPath: /
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false
